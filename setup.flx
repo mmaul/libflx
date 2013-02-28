@@ -1,0 +1,38 @@
+include "PKGTOOL/pkgtool";
+//$ Preforms build tasks in a way an Lib might like them done
+BUILD_LIKE = Lib;
+ 
+open PkgTool;
+open Filename;
+open FileStat;
+//$ By default setup will statically compile each .flx file in the bin dir
+//$ if you need to do something special in each phase, create an proc instance
+//$ for that phase. phases are build, test, install and clean.
+//$ You will probably want to call default_<phase> at the end of your instace
+//$ if you still want to default behavior to be preformed in addition to
+//$ your special sauce.
+
+instance PkgTool {
+
+  proc build () {
+    task("Building libflx plugin");
+    match filetype(LIBDIR.join("libflx"+#Config::config.EXT_SHLIB)) with
+    |NONEXISTANT => {
+      log(run_cmd("flx -c " + LIBDIR.join("libflx.flx"),
+          "Error building libflx plugin."));
+    }
+    |_ => {}
+    endmatch;
+    default_build();
+  }
+
+  proc install() {
+    default_install();
+    task("Installing libflx plugin");
+    cp_root(BUILD_DIR, LIBDIR.join("libflx"+#Config::config.EXT_SHLIB),
+      DEST_DIR.join(r"lib"));
+
+  }
+}
+
+SetupTool::run();
