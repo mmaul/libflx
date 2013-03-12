@@ -1,6 +1,6 @@
 NAME: libflx
 
-VERSION: .01  
+VERSION: .011  
 
 AUTHOR: Mike Maul
 

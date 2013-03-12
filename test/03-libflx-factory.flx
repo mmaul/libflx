@@ -1,5 +1,5 @@
 include "LIBFLX/libflx_factory";
-include "PKGTOOL/pkgtool";
+include "std/felix/pkgtool";
 open PkgTool;
 
 var myflx = libflx_factory();
@@ -9,27 +9,27 @@ myflx.set_showcode(true);
 myflx.set_snort(true);
 
 match myflx.init_compiler() with
-|OK[string] => {
+|OK => {
   imply("Compiler initialization");
   match myflx.flx_compile("test/D01-libflx.flx") with
-  |OK[string] => {
+  |OK => {
     imply("Compiliation of D01-libflx.flx");
     match myflx.c_compile() with
-    |ERR[string] (?e,?m) => { 
+    |ERR (?e,?m) => { 
       test_fail("Returned with error code:"+e+":"+m);
     }
-    |OK[string] ?m => {
+    |OK ?m => {
       assert_true(m == "A\na\n", 
         "Compiling D01-libflx.flx to shared object and running");
     }
     endmatch;
   }
-  |ERR[string] (?e,?m) => {
+  |ERR (?e,?m) => {
     test_fail("Returned with error code:"+e+":"+m);
   }
   endmatch;
 }
-|ERR[string] (?e,?m) => {
+|ERR (?e,?m) => {
   test_fail("Returned with error code:"+e+":"+m);
 }
 endmatch;
@@ -38,10 +38,10 @@ imply("Control returned to test harness");
 
 test_title("Testing flx_and_c_compile");
 match myflx.flx_and_c_compile("test/D01-libflx.flx") with
-|ERR[string] (?e,?m) => { 
+|ERR (?e,?m) => { 
   test_fail("Returned with error code:"+e+":"+m);
 }
-|OK[string] ?m => {
+|OK ?m => {
   assert_true(m == "A\na\n");
 }
 endmatch;

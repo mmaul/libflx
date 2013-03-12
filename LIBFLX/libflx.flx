@@ -621,19 +621,19 @@ object libflx() implements libflx_interface = {
     // find all include directories
     match xqt(PKGCONFIG_CFLAGS+ " " + quote("@"+cpp_filebase+".resh")) with
     |OK ?x =>  INCLUDE_DIRS = INCLUDE_DIRS +" " + x; 
-    |ERR[string] (?e,?m) =>  return ERR[string] (e,m); 
+    |ERR (?e,?m) =>  return ERR[string] (e,m); 
     endmatch;
 
     // find all include files
     match xqt(PKGCONFIG_INCLUDES+ " "+quote("@"+cpp_filebase+".resh")) with
     |OK ?x => INCLUDE_FILES=INCLUDE_FILES +" " + x;
-    |ERR[string] (?e,?m) => return ERR[string] (e,m);
+    |ERR (?e,?m) => return ERR[string] (e,m);
     endmatch;
 
     // find the driver package
     match xqt(PKGCONFIG_DRIVER+" "+ quote("@"+cpp_filebase+".resh")) with
     |OK ?x => DRIVER_PKG = if x == "" then "flx_run" else x endif;
-    |ERR[string] (?e,?m) => return ERR[string] (e,m);
+    |ERR (?e,?m) => return ERR[string] (e,m);
     endmatch;
 
     // find the driver entity
@@ -652,13 +652,13 @@ object libflx() implements libflx_interface = {
      // dynamic linkage: all the libraries required by the application 
       match xqt( PKGCONFIG_DLIBS+" "+DRIVER_PKG+" "+quote("@"+cpp_filebase+".resh")) with
       |OK ?v => LINK_STRING=DLINK_STRING+LINKER_SWITCHES+" "+ v; 
-      |ERR[string] (?e,?m) =>  return ERR[string] (e,m);
+      |ERR (?e,?m) =>  return ERR[string] (e,m);
       endmatch;
     else
       // static linkage: all the libraries required by the application and driver
       match xqt(PKGCONFIG_SLIBS+" "+DRIVER_PKG+" "+quote("@"+cpp_filebase+".resh")) with
       |OK ?v => LINK_STRING=SLINK_STRING+LINKER_SWITCHES+" "+v;
-      |ERR[string] (?e,?m) => return ERR[string] (e,m); 
+      |ERR (?e,?m) => return ERR[string] (e,m); 
       endmatch;
     done
 
@@ -985,14 +985,14 @@ debugln$ (">>"+str(cache_time));
         if xtime > srctime and xtime > cache_time do
           debugln$ "Running dynamically linked binary";
           match calpackages() with
-          |ERR[string] (?e,?m) => return ERR[string](e,m);
+          |ERR (?e,?m) => return ERR[string](e,m);
           |_ => {}();
           endmatch;
           cmd=FLXRUN+DRIVER_EXE+DEBUGSWITCH+" "+ quote(LINKER_OUTPUT_FILENAME)+" "+args;
           if STDOUT != "" do cmd=cmd + " > "+STDOUT; done
           debugln$ "Uptodate shared lib: Running command " + cmd;
           match perr(system(cmd)) with
-          |ERR[string] (?e,?m)=> return ERR[string](e,m);
+          |ERR (?e,?m)=> return ERR[string](e,m);
           |_ => {}();
           endmatch;
         else
@@ -1005,7 +1005,7 @@ debugln$ (">>"+str(cache_time));
           if STDOUT != "" do cmd=cmd + " > "+STDOUT; done
           debugln$ "Uptodate executable: Running command " + cmd;
           match perr(system(cmd)) with
-          |ERR[string] (?e,?m)=> return ERR[string](e,m);
+          |ERR (?e,?m)=> return ERR[string](e,m);
           |_ => {}();
           endmatch;
         else
@@ -1040,16 +1040,16 @@ debugln$ (">>"+str(cache_time));
       if result != 0 do 
         debugln "Felix compilation failed";
           match perr(system(cmd)) with
-          |ERR[string] (?e,?m)=> return ERR[string](e,m);
+          |ERR (?e,?m)=> return ERR[string](e,m);
           |_ => {}();
           endmatch;
       done
       debugln "Felix compilation succeeded";
-      match calpackages() with |OK[string] => {}(); |ERR[string](?e,?m) => return ERR[string](e,m);endmatch;
+      match calpackages() with |OK => {}(); |ERR(?e,?m) => return ERR[string](e,m);endmatch;
       write_include_file(cpp_filebase);
     else
       debugln "Felix compilation skipped by switch";
-      match calpackages() with |OK[string] => {}(); |ERR[string](?e,?m) => return ERR[string](e,m);endmatch;
+      match calpackages() with |OK => {}(); |ERR (?e,?m) => return ERR[string](e,m);endmatch;
        // need to do this here to set linker switches
     done 
     return OK[string]("");
@@ -1110,7 +1110,7 @@ debugln$ (">>"+str(cache_time));
               endmatch;
             else
               match perr(system(cmd)) with
-              |ERR[string] (?e,?m)=> return ERR[string](e,m);
+              |ERR (?e,?m)=> return ERR[string](e,m);
               |_ => {}();
               endmatch;
             done
@@ -1182,7 +1182,7 @@ debugln$ (">>"+str(cache_time));
             if STDOUT != "" do cmd=cmd + " > "+STDOUT; done
             debugln$ "Run command="+cmd;
             match perr(system(cmd)) with
-            |ERR[string] (?e,?m)=> return ERR[string](e,m);
+            |ERR (?e,?m)=> return ERR[string](e,m);
             |_ => {}();
             endmatch;
             //pexit(system(cmd));
@@ -1202,15 +1202,15 @@ debugln$ (">>"+str(cache_time));
 
   method gen flx_and_c_compile(src:string) =>
     match flx_compile(src) with
-      |OK[string] => c_compile()
+      |OK => c_compile()
       |?e => e
       endmatch;
 
   method gen init_and_flx_and_c_compile(src:string) =>
     match init_compiler() with
-    |OK[string] => 
+    |OK => 
       match flx_compile(src) with
-      |OK[string] => c_compile()
+      |OK => c_compile()
       |?e => e
       endmatch
     |?e =>  e

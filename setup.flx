@@ -1,4 +1,4 @@
-include "PKGTOOL/pkgtool";
+include "std/felix/pkgtool";
 //$ Preforms build tasks in a way an Lib might like them done
 BUILD_LIKE = Lib;
  
